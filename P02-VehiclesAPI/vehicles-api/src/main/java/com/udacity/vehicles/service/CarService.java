@@ -1,8 +1,15 @@
 package com.udacity.vehicles.service;
 
+import com.udacity.vehicles.client.maps.MapsClient;
+import com.udacity.vehicles.client.prices.PriceClient;
+import com.udacity.vehicles.domain.Location;
 import com.udacity.vehicles.domain.car.Car;
 import com.udacity.vehicles.domain.car.CarRepository;
+
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 /**
@@ -14,13 +21,18 @@ import org.springframework.stereotype.Service;
 public class CarService {
 
     private final CarRepository repository;
+    private final MapsClient mapsClient;
+    private final PriceClient priceClient;
 
-    public CarService(CarRepository repository) {
+    public CarService(CarRepository repository, MapsClient mapsClient, PriceClient priceClient) {
         /**
+         * Complete
          * TODO: Add the Maps and Pricing Web Clients you create
          *   in `VehiclesApiApplication` as arguments and set them here.
          */
         this.repository = repository;
+        this.mapsClient = mapsClient;
+        this.priceClient = priceClient;
     }
 
     /**
@@ -37,14 +49,29 @@ public class CarService {
      * @return the requested car's information, including location and price
      */
     public Car findById(Long id) {
+
+        Car carRecord = repository.findById(id).get();
+
+        try{
+            String price = priceClient.getPrice(id);
+            carRecord.setPrice(price);
+        } catch (Exception e){
+            throw new CarNotFoundException("Car is not found!");
+        }
+
+        Location location = mapsClient.getAddress(carRecord.getLocation());
+
+        carRecord.setLocation(location);
+
         /**
+         * complete
          * TODO: Find the car by ID from the `repository` if it exists.
          *   If it does not exist, throw a CarNotFoundException
          *   Remove the below code as part of your implementation.
          */
-        Car car = new Car();
 
         /**
+         * complete
          * TODO: Use the Pricing Web client you create in `VehiclesApiApplication`
          *   to get the price based on the `id` input'
          * TODO: Set the price of the car
@@ -54,6 +81,7 @@ public class CarService {
 
 
         /**
+         * complete
          * TODO: Use the Maps Web client you create in `VehiclesApiApplication`
          *   to get the address for the vehicle. You should access the location
          *   from the car object and feed it to the Maps service.
@@ -62,8 +90,7 @@ public class CarService {
          * meaning the Maps service needs to be called each time for the address.
          */
 
-
-        return car;
+        return carRecord;
     }
 
     /**
@@ -89,13 +116,21 @@ public class CarService {
      * @param id the ID number of the car to delete
      */
     public void delete(Long id) {
+        if(!repository.existsById(id)) {
+            throw new CarNotFoundException("There is not car with id:" + id + "found.");
+        } else {
+            repository.deleteById(id);
+        }
+
         /**
+         * complete
          * TODO: Find the car by ID from the `repository` if it exists.
          *   If it does not exist, throw a CarNotFoundException
          */
 
 
         /**
+         * complete
          * TODO: Delete the car from the repository.
          */
 
