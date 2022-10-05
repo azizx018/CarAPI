@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.ResponseEntity;
@@ -29,12 +30,14 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/cars")
+public
 class CarController {
 
-    private final CarService carService;
-    private final CarResourceAssembler assembler;
+    private CarService carService;
+    private CarResourceAssembler assembler;
 
-    CarController(CarService carService, CarResourceAssembler assembler) {
+    @Autowired
+     CarController(CarService carService, CarResourceAssembler assembler) {
         this.carService = carService;
         this.assembler = assembler;
     }
